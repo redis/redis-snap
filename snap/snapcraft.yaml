@@ -19,8 +19,6 @@ apps:
       - network-bind
       - network-observe
       - home
-    aliases:
-      - redis-server
   redis-cli:
     command: usr/bin/redis-cli
     plugs:
@@ -28,8 +26,6 @@ apps:
       - network-bind
       - network-observe
       - home
-    aliases:
-      - redis-cli
   redis-benchmark:
     command: usr/bin/redis-benchmark
     plugs:
@@ -37,8 +33,6 @@ apps:
       - network-bind
       - network-observe
       - home
-    aliases:
-      - redis-benchmark
   redis-check-aof:
     command: usr/bin/redis-check-aof
     plugs:
@@ -46,8 +40,6 @@ apps:
       - network-bind
       - network-observe
       - home
-    aliases:
-      - redis-check-aof
   redis-check-rdb:
     command: usr/bin/redis-check-rdb
     plugs:
@@ -64,8 +56,6 @@ apps:
       - network-bind
       - network-observe
       - home
-    aliases:
-      - redis-sentinel
 
 parts:
   redis:
