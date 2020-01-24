@@ -2,42 +2,70 @@ name: redis # you probably want to 'snapcraft register <name>'
 version: "5.0.7" # just for humans, typically '1.2+git' or '1.3.2'
 summary: Redis is used as a database, cache and message broker. # 79 char long summary
 description: |
-  Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker. It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes with radius queries and streams. Redis has built-in replication, Lua scripting, LRU eviction, transactions and different levels of on-disk persistence, and provides high availability via Redis Sentinel and automatic partitioning with Redis Cluster.
+  Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker. |
+  It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes with radius queries and streams. |
+  Redis has built-in replication, Lua scripting, LRU eviction, transactions and different levels of on-disk persistence, and provides high availability via Redis Sentinel and automatic partitioning with Redis Cluster. |
+  |
+  Check out https://redis.io/ for more information.
 
 grade: stable # must be 'stable' to release into candidate/stable channels
-confinement: classic # use 'strict' once you have the right plugs and slots
+confinement: strict # use 'strict' once you have the right plugs and slots
 
 apps:
   redis-server:
     command: usr/bin/redis-server
     plugs:
       - network
+      - network-bind
+      - network-observe
       - home
+    aliases:
+      - redis-server
   redis-cli:
     command: usr/bin/redis-cli
     plugs:
       - network
+      - network-bind
+      - network-observe
       - home
+    aliases:
+      - redis-cli
   redis-benchmark:
     command: usr/bin/redis-benchmark
     plugs:
       - network
+      - network-bind
+      - network-observe
       - home
+    aliases:
+      - redis-benchmark
   redis-check-aof:
     command: usr/bin/redis-check-aof
     plugs:
       - network
+      - network-bind
+      - network-observe
       - home
+    aliases:
+      - redis-check-aof
   redis-check-rdb:
     command: usr/bin/redis-check-rdb
     plugs:
       - network
+      - network-bind
+      - network-observe
       - home
+    aliases:
+      - redis-check-rdb
   redis-sentinel:
     command: usr/bin/redis-sentinel
     plugs:
       - network
+      - network-bind
+      - network-observe
       - home
+    aliases:
+      - redis-sentinel
 
 parts:
   redis:
