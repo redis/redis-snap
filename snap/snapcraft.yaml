@@ -1,5 +1,5 @@
 name: redis # you probably want to 'snapcraft register <name>'
-version: "5.0.8" # just for humans, typically '1.2+git' or '1.3.2'
+version: '6.0' # just for humans, typically '1.2+git' or '1.3.2'
 summary: Redis is used as a database, cache and message broker. # 79 char long summary
 description: |
   Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker. |
@@ -10,44 +10,47 @@ description: |
 
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
+base: core20
 
 apps:
-  redis-server:
+  server:
     command: usr/bin/redis-server
+    daemon: simple
+    restart-condition: always
     plugs:
       - network
       - network-bind
       - network-observe
       - home
-  redis-cli:
+  cli:
     command: usr/bin/redis-cli
     plugs:
       - network
       - network-bind
       - network-observe
       - home
-  redis-benchmark:
+  benchmark:
     command: usr/bin/redis-benchmark
     plugs:
       - network
       - network-bind
       - network-observe
       - home
-  redis-check-aof:
+  check-aof:
     command: usr/bin/redis-check-aof
     plugs:
       - network
       - network-bind
       - network-observe
       - home
-  redis-check-rdb:
+  check-rdb:
     command: usr/bin/redis-check-rdb
     plugs:
       - network
       - network-bind
       - network-observe
       - home
-  redis-sentinel:
+  sentinel:
     command: usr/bin/redis-sentinel
     plugs:
       - network
@@ -58,12 +61,14 @@ apps:
 parts:
   redis:
     plugin: make
-    source-type: tar
-    source: https://github.com/antirez/redis/archive/${SNAPCRAFT_PROJECT_VERSION}.tar.gz
+    source-type: git
+    source: https://github.com/redis/redis.git
+    source-branch: $SNAPCRAFT_PROJECT_VERSION
     override-build: |
       mkdir -p ${SNAPCRAFT_PART_INSTALL}/usr
-      make -j4
+      make -j4 BUILD_TLS=yes
       PREFIX=${SNAPCRAFT_PART_INSTALL}/usr make install
     build-packages:
       - build-essential
-      - tcl8.5
+      - libssl-dev
+      - gcc
