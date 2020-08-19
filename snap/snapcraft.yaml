@@ -63,7 +63,7 @@ parts:
     plugin: make
     source-type: git
     source: https://github.com/redis/redis.git
-    source-branch: $SNAPCRAFT_PROJECT_VERSION
+    source-tag: $SNAPCRAFT_PROJECT_VERSION
     override-build: |
       mkdir -p ${SNAPCRAFT_PART_INSTALL}/usr
       make -j4 BUILD_TLS=yes
