@@ -1,0 +1,21 @@
+name: Unstable
+
+on:
+    workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        repository: redis/redis
+    - name: Setup Snapcraft
+      run: |
+          sudo snap install snapcraft --classic
+          echo "$SNAP_TOKEN" | snapcraft login --with -
+          snapcraft
+          snapcraft upload --release=edge *.snap
+      env:
+        SNAP_TOKEN: ${{secrets.SNAP_TOKEN}}
+        SNAPCRAFT_BUILD_ENVIRONMENT: host
