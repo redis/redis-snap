@@ -8,8 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
       with:
         repository: redis/redis
+        path: redis
     - name: Setup Snapcraft
       run: |
           sudo snap install snapcraft --classic
