@@ -61,8 +61,7 @@ apps:
 parts:
   redis:
     plugin: make
-    source-type: git
-    source: https://github.com/redis/redis.git
+    source: redis/
     override-build: |
       mkdir -p ${SNAPCRAFT_PART_INSTALL}/usr
       make -j4 BUILD_TLS=yes
