@@ -12,14 +12,12 @@ jobs:
       with:
         repository: redis/redis
         path: redis
-    - name: Build snap
-      uses: snapcore/action-build@v1
-      id: build
-    - name: Publish Snap
-      uses: snapcore/action-publish@v1
-      with:
-        store_login: ${{ secrets.SNAP_TOKEN }}
-        snap: ${{ steps.build.outputs.snap }}
-        release: edge
+    - name: Setup Snapcraft
+      run: |
+          sudo snap install snapcraft --classic
+          echo "$SNAP_TOKEN" | snapcraft login --with -
+          snapcraft
+          snapcraft upload --release=edge *.snap
       env:
+        SNAP_TOKEN: ${{secrets.SNAP_TOKEN}}
         SNAPCRAFT_BUILD_ENVIRONMENT: host
