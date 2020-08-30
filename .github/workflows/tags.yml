@@ -1,0 +1,29 @@
+name: Unstable
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Determine version
+      run: |
+          echo "::set-env name=VERSION::${GITHUB_REF##*/}"
+    - uses: actions/checkout@v2
+      with:
+        repository: redis/redis
+        ref: ${{ env.VERSION }}
+        path: redis
+    - name: Setup Snapcraft
+      run: |
+          sudo snap install snapcraft --classic
+          echo "$SNAP_TOKEN" | snapcraft login --with -
+          snapcraft
+          # snapcraft upload --release=edge *.snap
+      env:
+        SNAP_TOKEN: ${{secrets.SNAP_TOKEN}}
+        SNAPCRAFT_BUILD_ENVIRONMENT: host
