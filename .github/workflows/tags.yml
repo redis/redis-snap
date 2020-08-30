@@ -1,4 +1,4 @@
-name: Unstable
+name: Tagged Packages
 
 on:
   push:
