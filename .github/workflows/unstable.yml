@@ -38,4 +38,4 @@ jobs:
       run: snapcraft --target-arch arm64 --destructive-mode --enable-experimental-target-arch
     - name: Upload
       run: |
-          snapcraft upload --release=edge *.snap
+          for f in *.snap; do snapcraft upload --release=edge $f; done
