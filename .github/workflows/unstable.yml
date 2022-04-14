@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.repository == 'redis/redis-snap'
     steps:
     - uses: actions/checkout@v2
     - uses: actions/checkout@v2
