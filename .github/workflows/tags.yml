@@ -22,7 +22,7 @@ jobs:
       run: |
           sudo snap install snapcraft --classic
           echo "$SNAP_TOKEN" | snapcraft login --with -
-          snapcraft
+          SNAPCRAFT_BUILD_INFO=1 snapcraft
           snapcraft upload --release=stable *.snap
       env:
         SNAP_TOKEN: ${{secrets.SNAP_TOKEN}}

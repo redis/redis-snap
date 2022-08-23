@@ -32,11 +32,11 @@ jobs:
     - name: Build amd64
       env:
         SNAPCRAFT_BUILD_ENVIRONMENT: host
-      run: snapcraft --target-arch amd64 --destructive-mode --enable-experimental-target-arch
+      run: SNAPCRAFT_BUILD_INFO=1 snapcraft --target-arch amd64 --destructive-mode --enable-experimental-target-arch
     - name: Build arm64
       env:
         SNAPCRAFT_BUILD_ENVIRONMENT: host
-      run: snapcraft --target-arch arm64 --destructive-mode --enable-experimental-target-arch
+      run: SNAPCRAFT_BUILD_INFO=1 snapcraft --target-arch arm64 --destructive-mode --enable-experimental-target-arch
     - name: Upload
       run: |
           for f in *.snap; do snapcraft upload --release=edge $f; done
