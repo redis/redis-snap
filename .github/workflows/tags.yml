@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.repository == 'redis/redis-snap'
     steps:
     - uses: actions/checkout@v2
     - name: Determine version
@@ -18,12 +19,28 @@ jobs:
         repository: redis/redis
         ref: ${{ env.VERSION }}
         path: redis
+    - name: Prepare for cross-compilation
+      run: |
+          sudo dpkg --add-architecture arm64
+          sudo sed -i 's/^deb /deb [arch=amd64] /g' /etc/apt/sources.list
+          cat <<_END_ | sudo tee /etc/apt/sources.list.d/crosscompile.list
+          deb [arch=arm64] http://ports.ubuntu.com $(lsb_release -cs) main universe
+          deb [arch=arm64] http://ports.ubuntu.com $(lsb_release -cs)-updates main universe
+          _END_
     - name: Setup Snapcraft
       run: |
-          sudo snap install snapcraft --classic
-          echo "$SNAP_TOKEN" | snapcraft login --with -
-          snapcraft
-          snapcraft upload --release=stable *.snap
+        sudo snap install snapcraft --classic
+        echo "$SNAP_TOKEN" | snapcraft login --with -
       env:
         SNAP_TOKEN: ${{secrets.SNAP_TOKEN}}
+    - name: Build amd64
+      env:
         SNAPCRAFT_BUILD_ENVIRONMENT: host
+      run: snapcraft --target-arch amd64 --destructive-mode --enable-experimental-target-arch
+    - name: Build arm64
+      env:
+        SNAPCRAFT_BUILD_ENVIRONMENT: host
+      run: snapcraft --target-arch arm64 --destructive-mode --enable-experimental-target-arch
+    - name: Upload
+      run: |
+          for f in *.snap; do snapcraft upload --release=stable $f; done
