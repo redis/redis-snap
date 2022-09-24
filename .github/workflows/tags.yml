@@ -36,10 +36,12 @@ jobs:
     - name: Build amd64
       env:
         SNAPCRAFT_BUILD_ENVIRONMENT: host
+        SNAPCRAFT_BUILD_INFO: 1
       run: snapcraft --target-arch amd64 --destructive-mode --enable-experimental-target-arch
     - name: Build arm64
       env:
         SNAPCRAFT_BUILD_ENVIRONMENT: host
+        SNAPCRAFT_BUILD_INFO: 1
       run: snapcraft --target-arch arm64 --destructive-mode --enable-experimental-target-arch
     - name: Upload
       run: |
