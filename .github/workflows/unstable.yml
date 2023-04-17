@@ -26,9 +26,9 @@ jobs:
     - name: Setup Snapcraft
       run: |
         sudo snap install snapcraft --classic
-        echo "$SNAP_TOKEN" | snapcraft login --with -
+        snapcraft login --with -
       env:
-        SNAP_TOKEN: ${{secrets.SNAP_TOKEN}}
+        SNAPCRAFT_STORE_CREDENTIALS: ${{secrets.SNAP_TOKEN}}
     - name: Build amd64
       env:
         SNAPCRAFT_BUILD_ENVIRONMENT: host
