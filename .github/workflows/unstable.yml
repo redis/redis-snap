@@ -26,9 +26,6 @@ jobs:
     - name: Setup Snapcraft
       run: |
         sudo snap install snapcraft --classic
-        snapcraft login --with -
-      env:
-        SNAPCRAFT_STORE_CREDENTIALS: ${{secrets.SNAP_TOKEN}}
     - name: Build amd64
       env:
         SNAPCRAFT_BUILD_ENVIRONMENT: host
@@ -42,3 +39,5 @@ jobs:
     - name: Upload
       run: |
           for f in *.snap; do snapcraft upload --release=edge $f; done
+      env:
+        SNAPCRAFT_STORE_CREDENTIALS: ${{secrets.SNAP_TOKEN}}
