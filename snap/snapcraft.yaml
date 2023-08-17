@@ -17,6 +17,8 @@ apps:
     command: usr/bin/redis-server
     daemon: simple
     restart-condition: always
+    environment:
+      LANG: C.UTF-8
     plugs:
       - network
       - network-bind
@@ -52,6 +54,8 @@ apps:
       - home
   sentinel:
     command: usr/bin/redis-sentinel
+    environment:
+      LANG: C.UTF-8
     plugs:
       - network
       - network-bind
