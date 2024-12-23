@@ -93,9 +93,6 @@ parts:
           VER="unstable-$GITSHA"
       fi
       snapcraftctl set-version $VER
-      mkdir -p ${SNAPCRAFT_PART_INSTALL}/usr/lib/redis/modules
-
-
     build-packages:
       - pkg-config
       - wget
