@@ -1,43 +1,200 @@
 name: Unstable
 
 on:
-    workflow_dispatch:
-    schedule:
-      - cron: '0 0 * * *'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+  pull_request:
+    paths:
+      - 'snap/**'
+      - '.github/workflows/**'
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
-    if: github.repository == 'redis/redis-snap'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: amd64
+            runner: ubuntu-24.04
+          - architecture: arm64
+            runner: ubuntu24-arm64-4-16
+
+    runs-on: ${{ matrix.runner }}
+
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         repository: redis/redis
         path: redis
-    - name: Prepare for cross-compilation
-      run: |
-          sudo dpkg --add-architecture arm64
-          sudo sed -i 's/^deb /deb [arch=amd64] /g' /etc/apt/sources.list
-          cat <<_END_ | sudo tee /etc/apt/sources.list.d/crosscompile.list
-          deb [arch=arm64] http://ports.ubuntu.com $(lsb_release -cs) main universe
-          deb [arch=arm64] http://ports.ubuntu.com $(lsb_release -cs)-updates main universe
-          _END_
+        ref: '8.0-m03'
+
     - name: Setup Snapcraft
       run: |
         sudo snap install snapcraft --classic
-    - name: Build amd64
+
+    - uses: canonical/setup-lxd@v0.1.2
+    - name: Build Snap
       env:
-        SNAPCRAFT_BUILD_ENVIRONMENT: host
         SNAPCRAFT_BUILD_INFO: 1
-      run: snapcraft --target-arch amd64 --destructive-mode --enable-experimental-target-arch
-    - name: Build arm64
-      env:
-        SNAPCRAFT_BUILD_ENVIRONMENT: host
-        SNAPCRAFT_BUILD_INFO: 1
-      run: snapcraft --target-arch arm64 --destructive-mode --enable-experimental-target-arch
+      run: |
+        sudo snapcraft
+
     - name: Upload
+      if: github.ref == 'refs/heads/master'
       run: |
           for f in *.snap; do snapcraft upload --release=edge $f; done
       env:
         SNAPCRAFT_STORE_CREDENTIALS: ${{secrets.SNAP_TOKEN}}
+
+    - name: Upload to artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: redis-snap-${{ matrix.architecture }}-${{ github.sha }}
+        path: |
+          *.snap
+        retention-days: 1
+
+  test:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # AMD64 runners
+          - architecture: amd64
+            os: ubuntu-20.04
+            runner: ubuntu-20.04
+          - architecture: amd64
+            os: ubuntu-22.04
+            runner: ubuntu-22.04
+          - architecture: amd64
+            os: ubuntu-24.04
+            runner: ubuntu-24.04
+          
+          # ARM64 runners
+          - architecture: arm64
+            os: ubuntu-22.04
+            runner: ubuntu22-arm64-2-8
+          - architecture: arm64
+            os: ubuntu-24.04
+            runner: ubuntu24-arm64-2-8
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Setup test environment
+        run: |
+          echo "Testing on ${{ matrix.os }} for ${{ matrix.architecture }}"
+          echo "System information:"
+          uname -a
+          lsb_release -a
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: redis-snap-${{ matrix.architecture }}-${{ github.sha }}
+          path: ./snap-artifacts
+
+      - name: Verify artifacts
+        run: |
+          ls -la ./snap-artifacts
+          echo "Found snap files:"
+          find ./snap-artifacts -name "*.snap"
+
+      - name: Install Redis snap package
+        run: |
+          SNAP_FILE=$(ls snap-artifacts/*.snap)
+          echo "Installing snap: $SNAP_FILE"
+          sudo snap install --dangerous $SNAP_FILE
+
+      - name: Verify Redis installation and start Redis
+        run: |
+          snap list | grep redis
+          snap services | grep redis || echo "Redis service not found."
+          sudo snap start redis.server
+
+      - name: Basic Sanity Tests
+        run: |
+          for i in {1..5}; do redis.cli ping &>/dev/null && break || echo "Waiting for Redis... $i" && sleep 1; done
+          redis.cli info server || { echo "Cannot get server info"; exit 1; }
+
+      - name: Verify installed modules
+        run: |
+          modules=$(redis.cli module list)
+          echo "Installed modules:"
+          echo "$modules"
+          missing_modules=()
+          for module in "bf" "search" "timeseries" "ReJSON"; do
+            if ! echo "$modules" | grep -q "$module"; then
+              missing_modules+=("$module")
+            fi
+          done
+          if [ ${#missing_modules[@]} -eq 0 ]; then
+            echo "All required modules are installed"
+          else
+            echo "The following modules are missing: ${missing_modules[*]}"
+            exit 1
+          fi
+
+      - name: Test RedisBloom
+        run: |
+          redis.cli BF.ADD popular_keys "redis:hash"
+          redis.cli BF.ADD popular_keys "redis:set"
+          [ "$(redis.cli BF.EXISTS popular_keys "redis:hash")" = "1" ] || \
+            { echo "RedisBloom test failed: 'redis:hash' not found"; exit 1; }
+          [ "$(redis.cli BF.EXISTS popular_keys "redis:list")" = "0" ] || \
+            { echo "RedisBloom test failed: 'redis:list' found unexpectedly"; exit 1; }
+          echo "RedisBloom test passed successfully"
+
+      - name: Test RediSearch
+        run: |
+          redis.cli FT.CREATE redis_commands ON HASH PREFIX 1 cmd: SCHEMA name TEXT SORTABLE description TEXT
+          redis.cli HSET cmd:set name "SET" description "Set the string value of a key"
+          redis.cli HSET cmd:get name "GET" description "Get the value of a key"
+          result=$(redis.cli FT.SEARCH redis_commands "value")
+          if echo "$result" | grep -q "Set the string value of a key" && \
+             echo "$result" | grep -q "Get the value of a key"; then
+            echo "RediSearch test passed successfully"
+          else
+            echo "RediSearch test failed: expected commands not found in search results"
+            exit 1
+          fi
+
+      - name: Test RedisTimeSeries
+        run: |
+          redis.cli TS.CREATE redis:cpu:usage RETENTION 86400
+          redis.cli TS.ADD redis:cpu:usage "*" 80
+          redis.cli TS.ADD redis:cpu:usage "*" 65
+          redis.cli TS.ADD redis:cpu:usage "*" 70
+          result=$(redis.cli TS.RANGE redis:cpu:usage - + COUNT 3)
+          if echo "$result" | grep -q "80" && \
+             echo "$result" | grep -q "65" && \
+             echo "$result" | grep -q "70"; then
+            echo "RedisTimeSeries test passed successfully"
+          else
+            echo "RedisTimeSeries test failed: expected values not found in time series"
+            exit 1
+          fi
+
+      - name: Test ReJSON
+        run: |
+          redis.cli JSON.SET redis:config $ '{"maxmemory":"2gb","maxmemory-policy":"allkeys-lru"}'
+          result=$(redis.cli JSON.GET redis:config $.maxmemory-policy)
+          cleaned_result=$(echo $result | tr -d '[]"')
+          if [ "$cleaned_result" = "allkeys-lru" ]; then
+            echo "ReJSON test passed successfully"
+          else
+            echo "ReJSON test failed: expected 'allkeys-lru', got $result"
+            exit 1
+          fi
+
+      - name: Check Redis snap status
+        run: |
+          snap info redis
+
+      - name: Cleanup
+        if: always()
+        run: |
+          sudo snap remove redis || true
