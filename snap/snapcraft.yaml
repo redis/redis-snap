@@ -12,6 +12,12 @@ grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 base: core22
 
+plugs:
+  etc-redis-redis-conf:
+    interface: system-files
+    read:
+    - /etc/redis/redis.conf
+
 apps:
   server:
     command: usr/bin/redis-server --loadmodule $SNAP/usr/lib/redis/modules/redisbloom.so --loadmodule $SNAP/usr/lib/redis/modules/rejson.so --loadmodule $SNAP/usr/lib/redis/modules/redistimeseries.so --loadmodule $SNAP/usr/lib/redis/modules/redisearch.so
@@ -24,6 +30,7 @@ apps:
       - network-bind
       - network-observe
       - home
+      - etc-redis-redis-conf
   cli:
     command: usr/bin/redis-cli
     plugs:
@@ -31,6 +38,7 @@ apps:
       - network-bind
       - network-observe
       - home
+      - etc-redis-redis-conf
   benchmark:
     command: usr/bin/redis-benchmark
     plugs:
@@ -38,6 +46,7 @@ apps:
       - network-bind
       - network-observe
       - home
+      - etc-redis-redis-conf
   check-aof:
     command: usr/bin/redis-check-aof
     plugs:
@@ -45,6 +54,7 @@ apps:
       - network-bind
       - network-observe
       - home
+      - etc-redis-redis-conf
   check-rdb:
     command: usr/bin/redis-check-rdb
     plugs:
@@ -52,6 +62,7 @@ apps:
       - network-bind
       - network-observe
       - home
+      - etc-redis-redis-conf
   sentinel:
     command: usr/bin/redis-sentinel
     environment:
@@ -61,6 +72,7 @@ apps:
       - network-bind
       - network-observe
       - home
+      - etc-redis-redis-conf
 
 parts:
   redis:
