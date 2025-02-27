@@ -12,7 +12,7 @@ distributions.</p>
 ![tags](https://github.com/redis/redis-snap/actions/workflows/tags.yml/badge.svg)
 ![unstable](https://github.com/redis/redis-snap/actions/workflows/unstable.yml/badge.svg)
 
-## Redis Community Edition - Install with snap
+## Redis Community Edition - Install using snap
 
 To install Redis 8 using snap, please use the following command:
 
