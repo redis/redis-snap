@@ -14,7 +14,7 @@ distributions.</p>
 
 ## Redis Community Edition - Install using snap
 
-To install Redis Community Edition using snap, please use the following command:
+To install the latest version of Redis Community Edition using snap, please use the following command:
 
     sudo snap install redis
 
@@ -34,7 +34,7 @@ Redis officially tests the latest version of this distribution against the follo
 - Ubuntu 22.04
 - Ubuntu 20.04
 
-## Remaining tasks
+## Release tasks
 
 <!-- Uncomment and modify this when you have a screenshot
 ![my-snap-name](screenshot.png?raw=true "my-snap-name")
