@@ -12,7 +12,9 @@ distributions.</p>
 ![tags](https://github.com/redis/redis-snap/actions/workflows/tags.yml/badge.svg)
 ![unstable](https://github.com/redis/redis-snap/actions/workflows/unstable.yml/badge.svg)
 
-## Install
+## Redis Community Edition - Install using snap
+
+To install the latest version of Redis Community Edition using snap, please use the following command:
 
     sudo snap install redis
 
@@ -22,7 +24,17 @@ distributions.</p>
 
 ([Don't have snapd installed?](https://snapcraft.io/docs/core/install))
 
-## Remaining tasks
+You can also visit https://snapcraft.io/redis.
+
+## Supported Operating Systems
+
+Redis officially tests the latest version of this distribution against the following OSes:
+
+- Ubuntu 24.04 (Noble Numbat)
+- Ubuntu 22.04 (Jammy Jellyfish)
+- Ubuntu 20.04 (Focal Fossa)
+
+## Release tasks
 
 <!-- Uncomment and modify this when you have a screenshot
 ![my-snap-name](screenshot.png?raw=true "my-snap-name")
@@ -63,7 +75,6 @@ upstream so [Project] can authoritatively publish future releases.
   - [ ] Ask the Snap Advocacy team to celebrate the snap - [link]()
 
 If you have any questions, [post in the Snapcraft forum](https://forum.snapcraft.io).
-
 
 ## The Snapcrafters
 
