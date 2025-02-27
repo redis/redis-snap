@@ -12,7 +12,9 @@ distributions.</p>
 ![tags](https://github.com/redis/redis-snap/actions/workflows/tags.yml/badge.svg)
 ![unstable](https://github.com/redis/redis-snap/actions/workflows/unstable.yml/badge.svg)
 
-## Install
+## Installation Instructions
+
+To install Redis 8 using snap, please use the following command:
 
     sudo snap install redis
 
@@ -21,6 +23,16 @@ distributions.</p>
 -->
 
 ([Don't have snapd installed?](https://snapcraft.io/docs/core/install))
+
+You can also visit https://snapcraft.io/redis.
+
+## Supported Operating Systems
+
+Redis officially tests this distribution against the following OSes:
+
+- Ubuntu 24.04
+- Ubuntu 22.04
+- Ubuntu 20.04
 
 ## Remaining tasks
 
@@ -63,7 +75,6 @@ upstream so [Project] can authoritatively publish future releases.
   - [ ] Ask the Snap Advocacy team to celebrate the snap - [link]()
 
 If you have any questions, [post in the Snapcraft forum](https://forum.snapcraft.io).
-
 
 ## The Snapcrafters
 
