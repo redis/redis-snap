@@ -14,7 +14,7 @@ distributions.</p>
 
 ## Redis Community Edition - Install using snap
 
-To install Redis 8 using snap, please use the following command:
+To install Redis Community Edition using snap, please use the following command:
 
     sudo snap install redis
 
