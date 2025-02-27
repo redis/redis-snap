@@ -30,9 +30,9 @@ You can also visit https://snapcraft.io/redis.
 
 Redis officially tests the latest version of this distribution against the following OSes:
 
-- Ubuntu 24.04
-- Ubuntu 22.04
-- Ubuntu 20.04
+- Ubuntu 24.04 (Noble Numbat)
+- Ubuntu 22.04 (Jammy Jellyfish)
+- Ubuntu 20.04 (Focal Fossa)
 
 ## Release tasks
 
