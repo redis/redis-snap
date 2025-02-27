@@ -28,7 +28,7 @@ You can also visit https://snapcraft.io/redis.
 
 ## Supported Operating Systems
 
-Redis officially tests this distribution against the following OSes:
+Redis officially tests the latest version of this distribution against the following OSes:
 
 - Ubuntu 24.04
 - Ubuntu 22.04
