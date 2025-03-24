@@ -69,6 +69,10 @@ apps:
       - network-observe
       - home
 
+layout:
+  /etc/redis/redis.conf:
+    symlink: $SNAP_COMMON/etc/redis/redis.conf
+
 parts:
   conf-dist:
     plugin: dump
@@ -87,6 +91,8 @@ parts:
       mkdir -p ${SNAPCRAFT_PART_INSTALL}/usr/lib/redis/modules
       make -j4
       PREFIX=${SNAPCRAFT_PART_INSTALL}/usr make install
+      mkdir -p ${SNAPCRAFT_PART_INSTALL}/etc/redis
+      install redis.conf ${SNAPCRAFT_PART_INSTALL}/etc/redis
       VER=`sed -n 's/^.* REDIS_VERSION "\(.*\)"$/\1/g p' < src/version.h`
       if [ "$VER" = "999.999.999" ]; then
           GITSHA=`sed -n 's/^.* REDIS_GIT_SHA1 "\(.*\)"$/\1/g p' < src/release.h`
