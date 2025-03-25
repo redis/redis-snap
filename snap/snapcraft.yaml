@@ -69,10 +69,6 @@ apps:
       - network-observe
       - home
 
-layout:
-  /etc/redis/redis.conf:
-    symlink: $SNAP_COMMON/etc/redis/redis.conf
-
 parts:
   conf-dist:
     plugin: dump
