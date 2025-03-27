@@ -1,9 +1,0 @@
-#!/bin/sh -e
-
-# config
-mkdir -p $SNAP_COMMON/etc/redis
-cp $SNAP/conf-dist/redis.conf $SNAP_COMMON/etc/redis/
-
-# data
-mkdir -p $SNAP_COMMON/var/lib/redis
-sed -i "s~^dir /var/lib/redis~dir $SNAP_COMMON/var/lib/redis~" $SNAP_COMMON/etc/redis/redis.conf
