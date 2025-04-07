@@ -28,7 +28,7 @@ jobs:
       with:
         repository: redis/redis
         path: redis
-        ref: '8.0-m04'
+        ref: '8.0-rc1'
 
     - name: Setup Snapcraft
       run: |
@@ -109,16 +109,35 @@ jobs:
           echo "Installing snap: $SNAP_FILE"
           sudo snap install --dangerous $SNAP_FILE
 
+      - name: Prepare config test
+        run: |
+          sudo sed -i 's/dump.rdb/dump-preconfigured.rdb/g' /var/snap/redis/common/etc/redis/redis.conf
+
       - name: Verify Redis installation and start Redis
         run: |
           snap list | grep redis
           snap services | grep redis || echo "Redis service not found."
-          sudo snap start redis.server
+          # service is started by default on install, but we need to reapply updated config
+          sudo snap restart redis.server
 
       - name: Basic Sanity Tests
         run: |
           for i in {1..5}; do redis.cli ping &>/dev/null && break || echo "Waiting for Redis... $i" && sleep 1; done
           redis.cli info server || { echo "Cannot get server info"; exit 1; }
+
+      - name: Configuration Tests
+        run: |
+            [ "$(redis.cli CONFIG GET dbfilename | tail -1 )" = "dump-preconfigured.rdb" ] || \
+              { echo "Configuration test failed:
+                      expected: 'dump-preconfigured.rdb'
+                      got     : '$(redis.cli CONFIG GET dbfilename)'"; exit 1; }
+            # dbfilename is immutable, so use something else that won't become a default
+            redis.cli CONFIG SET tls-protocols "TLSv1.2"
+            redis.cli CONFIG REWRITE
+            grep 'tls-protocols "TLSv1.2"' /var/snap/redis/common/etc/redis/redis.conf || \
+              { echo "Configuration REWRITE test failed:
+                      expected: 'tls-protocols \"TLSv1.2\"'
+                      got     : '$(grep tls-protocols /var/snap/redis/common/etc/redis/redis.conf)'"; exit 1; }
 
       - name: Verify installed modules
         run: |
