@@ -1,0 +1,19 @@
+#!/bin/sh -e
+
+# config
+mkdir -p $SNAP_COMMON/etc/redis
+# data
+mkdir -p $SNAP_COMMON/var/lib/redis
+
+DIST_CONF=$SNAP/conf-dist/redis.conf
+NEW_CONF=$SNAP_COMMON/etc/redis/redis.conf.new
+CURRENT_CONF=$SNAP_COMMON/etc/redis/redis.conf
+BACKUP_CONF=$SNAP_COMMON/etc/redis/redis.conf.old
+
+cp $DIST_CONF $NEW_CONF
+sed -i "s~^dir /var/lib/redis~dir $SNAP_COMMON/var/lib/redis~" $NEW_CONF
+
+if [ -f "$CURRENT_CONF" ] && ! cmp -s $NEW_CONF $CURRENT_CONF; then
+	cp $CURRENT_CONF $BACKUP_CONF;
+fi
+mv $NEW_CONF $CURRENT_CONF
