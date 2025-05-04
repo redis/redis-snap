@@ -2,7 +2,8 @@ name: redis
 adopt-info: redis
 summary: Redis is used as a database, cache and message broker. # 79 char long summary
 description: |
-  Redis is source-available software, available under both the Redis Source Available License v2 (RSALv2) and the Server Side Public License v1 (SSPLv1). In-memory data structure store, used as a database, cache and message broker. |
+  Redis is open source software, Starting with Redis 8.0, Redis follows a tri-licensing model with the choice of the Redis Source Available License v2 - RSALv2⁠, Server Side Public License v1 - SSPLv1, or the GNU Affero General Public License v3 - AGPLv3. Prior versions of Redis (<=7.2.4) are licensed under 3-Clause BSD⁠, and Redis 7.4.x-7.8.x are licensed under the dual RSALv2 or SSPLv1 license. |
+  Redis is an in-memory data structure store, used as a database, cache and message broker. |
   It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes with radius queries and streams. |
   Redis has built-in replication, Lua scripting, LRU eviction, transactions and different levels of on-disk persistence, and provides high availability via Redis Sentinel and automatic partitioning with Redis Cluster. |
   |
