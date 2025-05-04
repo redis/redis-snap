@@ -8,13 +8,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
-#    if: github.repository == 'redis/redis-snap'
+    if: github.repository == 'redis/redis-snap'
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Determine version
       run: |
           echo "VERSION=${GITHUB_REF##*/}" >> $GITHUB_ENV
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         repository: redis/redis
         ref: ${{ env.VERSION }}
