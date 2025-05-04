@@ -12,9 +12,9 @@ distributions.</p>
 ![tags](https://github.com/redis/redis-snap/actions/workflows/tags.yml/badge.svg)
 ![unstable](https://github.com/redis/redis-snap/actions/workflows/unstable.yml/badge.svg)
 
-## Redis Community Edition - Install using snap
+## Redis Open Source - Install using snap
 
-To install the latest version of Redis Community Edition using snap, please use the following command:
+To install the latest version of Redis Open Source using snap, please use the following command:
 
     sudo snap install redis
 
