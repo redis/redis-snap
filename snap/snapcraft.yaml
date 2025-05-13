@@ -76,7 +76,17 @@ parts:
     source: conf-dist
     organize:
       redis.conf: conf-dist/redis.conf
+  
+  cmake-install:
+    plugin: nil
+    override-build: |
+      snap install cmake --channel=3.31/stable --classic
+      snapcraftctl build
+    build-packages:
+      - snapd
+  
   redis:
+    after: [cmake-install]
     plugin: make
     source: redis
     build-environment:
@@ -100,7 +110,6 @@ parts:
       - gcc
       - g++
       - git
-      - cmake
       - python3
       - python3-pip
       - python3-venv
