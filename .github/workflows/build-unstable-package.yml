@@ -62,6 +62,59 @@ jobs:
         path: |
           *.snap
         retention-days: 1
+        
+    - name: Capture build logs on failure
+      if: failure()
+      run: |
+        mkdir -p /tmp/build-logs
+        
+        echo "Build failed for snap on ${{ matrix.architecture }}"
+        echo "Capturing detailed logs for troubleshooting..."
+        
+        # Get system info
+        uname -a > /tmp/build-logs/system-info.log 2>&1
+        snap --version > /tmp/build-logs/snap-info.log 2>&1
+        snapcraft --version >> /tmp/build-logs/snap-info.log 2>&1
+        
+        # Get LXD container info
+        lxc list > /tmp/build-logs/lxc-list.log 2>&1 || echo "Failed to list LXC containers"
+        lxc info > /tmp/build-logs/lxc-info.log 2>&1 || echo "Failed to get LXC info"
+        
+        # Get snap environment info
+        snap list > /tmp/build-logs/snap-list.log 2>&1
+        
+        # Get Redis source info
+        if [ -d "redis" ]; then
+          (cd redis && git log -n 3) > /tmp/build-logs/redis-git-info.log 2>&1
+          find redis/deps/modules -name "Makefile" -exec grep "MODULE_VERSION" {} \; > /tmp/build-logs/module-versions.log 2>&1
+        fi
+        
+        # Get snap parts info if they exist
+        if [ -d "parts" ]; then
+          find parts -name "*.log" -exec cp {} /tmp/build-logs/ \; || echo "No part logs found"
+          find parts -type f -name "*.log" | sort > /tmp/build-logs/parts-logs-list.txt 2>&1
+        fi
+        
+        # Create a summary file
+        {
+          echo "Build failure summary for snap on ${{ matrix.architecture }}"
+          echo "Date: $(date)"
+          echo "GitHub SHA: ${{ github.sha }}"
+          echo "Architecture: ${{ matrix.architecture }}"
+          echo "Runner: ${{ matrix.runner }}"
+          echo "Distribution: snap"
+        } > /tmp/build-logs/failure-summary.txt
+        
+        echo "Log capture complete"
+        
+    - name: Upload build failure logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-failure-${{ matrix.architecture }}-snap
+        path: /tmp/build-logs/
+        retention-days: 30
+        if-no-files-found: warn
 
   test:
     needs: build
