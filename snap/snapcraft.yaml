@@ -76,7 +76,7 @@ parts:
     source: conf-dist
     organize:
       redis.conf: conf-dist/redis.conf
-  
+
   cmake-install:
     plugin: nil
     override-build: |
@@ -84,7 +84,7 @@ parts:
       snapcraftctl build
     build-packages:
       - snapd
-  
+
   redis:
     after: [cmake-install]
     plugin: make
@@ -117,6 +117,8 @@ parts:
       - unzip
       - rsync
       - clang
+      - llvm
+      - libclang-dev
       - automake
       - autoconf
       - libtool
