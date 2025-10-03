@@ -28,7 +28,7 @@ jobs:
       with:
         repository: redis/redis
         path: redis
-        ref: '8.2.1'
+        ref: '8.2.2'
 
     - name: Setup Snapcraft
       run: |
