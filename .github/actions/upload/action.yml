@@ -1,0 +1,93 @@
+name: 'Upload Redis Snap to Store'
+description: 'Upload Redis snap packages to the Snap Store'
+inputs:
+  run_id:
+    description: 'GitHub Actions run ID to download artifacts from (optional, defaults to current run)'
+    required: false
+    default: ''
+  github_token:
+    description: 'GitHub token for downloading artifacts from another run (optional)'
+    required: false
+    default: ''
+  risk_level:
+    description: 'Risk level for the snap release (edge, candidate, or stable)'
+    required: true
+  snapcraft_store_credentials:
+    description: 'Snapcraft store credentials for authentication'
+    required: true
+
+outputs:
+  uploaded_files:
+    description: 'List of uploaded snap files'
+    value: ${{ steps.upload-snaps.outputs.uploaded_files }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        if [[ ! "${{ inputs.risk_level }}" =~ ^(edge|candidate|stable)$ ]]; then
+          echo "Error: risk_level must be one of: edge, candidate, stable"
+          echo "Provided value: ${{ inputs.risk_level }}"
+          exit 1
+        fi
+        echo "Risk level validation passed: ${{ inputs.risk_level }}"
+
+    - name: Download all artifacts from current run
+      if: inputs.run_id == ''
+      uses: actions/download-artifact@v4
+      with:
+        pattern: redis-snap-*
+        path: ./snap-artifacts
+        merge-multiple: true
+
+    - name: Download all artifacts from specific run
+      if: inputs.run_id != ''
+      uses: actions/download-artifact@v4
+      with:
+        pattern: redis-snap-*
+        path: ./snap-artifacts
+        run-id: ${{ inputs.run_id }}
+        github-token: ${{ inputs.github_token }}
+        merge-multiple: true
+
+    - name: Verify artifacts
+      shell: bash
+      run: |
+        ls -la ./snap-artifacts
+        echo "Found snap files:"
+        find ./snap-artifacts -name "*.snap"
+
+    - name: Setup Snapcraft
+      shell: bash
+      run: |
+        sudo snap install snapcraft --classic
+
+    - name: Upload snaps to store
+      id: upload-snaps
+      shell: bash
+      env:
+        SNAPCRAFT_STORE_CREDENTIALS: ${{ inputs.snapcraft_store_credentials }}
+      run: |
+        cd snap-artifacts
+        uploaded_files=""
+
+        for snap_file in *.snap; do
+          if [ -f "$snap_file" ]; then
+            echo "Uploading $snap_file to ${{ inputs.risk_level }} channel..."
+            snapcraft upload --release=${{ inputs.risk_level }} "$snap_file"
+
+            if [ -z "$uploaded_files" ]; then
+              uploaded_files="$snap_file"
+            else
+              uploaded_files="$uploaded_files,$snap_file"
+            fi
+
+            echo "Successfully uploaded: $snap_file"
+          fi
+        done
+
+        echo "uploaded_files=$uploaded_files" >> $GITHUB_OUTPUT
+        echo "All uploads complete. Uploaded files: $uploaded_files"
+
