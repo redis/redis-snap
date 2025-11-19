@@ -1,0 +1,123 @@
+name: 'Build Redis Snap'
+description: 'Build Redis snap package with configurable version'
+inputs:
+  version:
+    description: 'Redis version to build (e.g., "unstable", "8.4-rc1", or a tag like "7.2.4")'
+    required: true
+  architecture:
+    description: 'Architecture to build for (amd64 or arm64)'
+    required: true
+outputs:
+  packages_list:
+    description: 'JSON list of built snap files'
+    value: ${{ steps.list-packages.outputs.packages_list }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Checkout Redis repository
+      uses: actions/checkout@v4
+      with:
+        repository: redis/redis
+        path: redis
+        ref: ${{ inputs.version }}
+
+    - name: Configure Redis modules to use master
+      if: inputs.version == 'unstable'
+      shell: bash
+      run: |
+        echo "Updating module versions to use master branch"
+        for module in redisbloom redisearch redistimeseries redisjson; do
+          if [ -f "redis/modules/${module}/Makefile" ]; then
+            echo "Updating ${module} to use master branch"
+            sed -i 's/MODULE_VERSION = .*/MODULE_VERSION = master/' "redis/modules/${module}/Makefile"
+            echo "Verifying ${module} version: $(grep "MODULE_VERSION" "redis/modules/${module}/Makefile")"
+          fi
+        done
+
+    - name: Setup Snapcraft
+      shell: bash
+      run: |
+        sudo snap install snapcraft --classic
+
+    - name: Setup LXD
+      uses: canonical/setup-lxd@v0.1.2
+
+    - name: Build Snap
+      shell: bash
+      env:
+        SNAPCRAFT_BUILD_INFO: 1
+      run: |
+        sudo snapcraft
+
+    - name: List built packages
+      id: list-packages
+      shell: bash
+      run: |
+        packages=$(ls *.snap | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        echo "packages_list=$packages" >> $GITHUB_OUTPUT
+        echo "Built packages: $packages"
+
+    - name: Upload to artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: redis-snap-${{ inputs.architecture }}-${{ github.sha }}
+        path: '*.snap'
+        retention-days: 1
+
+    - name: Capture build logs on failure
+      if: failure() && inputs.version == 'unstable'
+      shell: bash
+      run: |
+        mkdir -p /tmp/build-logs
+        
+        echo "Build failed for snap on ${{ inputs.architecture }}"
+        echo "Capturing detailed logs for troubleshooting..."
+        
+        # Get system info
+        uname -a > /tmp/build-logs/system-info.log 2>&1
+        snap --version > /tmp/build-logs/snap-info.log 2>&1
+        snapcraft --version >> /tmp/build-logs/snap-info.log 2>&1
+        
+        # Get LXD container info
+        lxc list > /tmp/build-logs/lxc-list.log 2>&1 || echo "Failed to list LXC containers"
+        lxc info > /tmp/build-logs/lxc-info.log 2>&1 || echo "Failed to get LXC info"
+        
+        # Get snap environment info
+        snap list > /tmp/build-logs/snap-list.log 2>&1
+        
+        # Get Redis source info
+        if [ -d "redis" ]; then
+          (cd redis && git log -n 3) > /tmp/build-logs/redis-git-info.log 2>&1
+          find redis/modules -name "Makefile" -exec grep "MODULE_VERSION" {} \; > /tmp/build-logs/module-versions.log 2>&1
+        fi
+        
+        # Get snap parts info if they exist
+        if [ -d "parts" ]; then
+          find parts -name "*.log" -exec cp {} /tmp/build-logs/ \; || echo "No part logs found"
+          find parts -type f -name "*.log" | sort > /tmp/build-logs/parts-logs-list.txt 2>&1
+        fi
+        
+        # Create a summary file
+        {
+          echo "Build failure summary for snap on ${{ inputs.architecture }}"
+          echo "Date: $(date)"
+          echo "GitHub SHA: ${{ github.sha }}"
+          echo "Architecture: ${{ inputs.architecture }}"
+          echo "Version: ${{ inputs.version }}"
+        } > /tmp/build-logs/failure-summary.txt
+        
+        echo "Log capture complete"
+
+    - name: Upload build failure logs
+      if: failure() && inputs.version == 'unstable'
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-failure-${{ inputs.architecture }}-snap
+        path: /tmp/build-logs/
+        retention-days: 30
+        if-no-files-found: warn
+
