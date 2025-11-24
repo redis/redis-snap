@@ -2,7 +2,6 @@
 name: Release Build and Test
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       release_tag:
