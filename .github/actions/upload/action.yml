@@ -17,9 +17,9 @@ inputs:
     required: true
 
 outputs:
-  uploaded_files:
-    description: 'List of uploaded snap files'
-    value: ${{ steps.upload-snaps.outputs.uploaded_files }}
+  upload_info:
+    description: 'JSON array with upload information for each snap'
+    value: ${{ steps.upload-snaps.outputs.upload_info }}
 
 runs:
   using: 'composite'
@@ -72,22 +72,32 @@ runs:
       run: |
         cd snap-artifacts
         uploaded_files=""
+        upload_info_array="[]"
 
         for snap_file in *.snap; do
           if [ -f "$snap_file" ]; then
             echo "Uploading $snap_file to ${{ inputs.risk_level }} channel..."
-            snapcraft upload --release=${{ inputs.risk_level }} "$snap_file"
 
-            if [ -z "$uploaded_files" ]; then
-              uploaded_files="$snap_file"
-            else
-              uploaded_files="$uploaded_files,$snap_file"
-            fi
+            # Upload with JSON format to get detailed information
+            upload_result=$(snapcraft upload --release=${{ inputs.risk_level }} --format=json "$snap_file")
 
-            echo "Successfully uploaded: $snap_file"
+            echo "Upload result for $snap_file:"
+            echo "$upload_result" | jq '.'
+
+            upload_result=$(echo "$upload_result" | jq -c --arg file "$snap_file" '.file=$file')
+
+            # Add file name to the upload result and append to array
+            upload_info_array=$(echo "$upload_info_array" | jq -c --argjson item "$(echo "$upload_result")"  '. + [$item]')
+
+            revision=$(echo "$upload_result" | jq -r '.revision // "unknown"')
+            echo "Successfully uploaded: $snap_file (revision: $revision)"
           fi
         done
 
-        echo "uploaded_files=$uploaded_files" >> $GITHUB_OUTPUT
-        echo "All uploads complete. Uploaded files: $uploaded_files"
+        echo "upload_info<<EOF" >> $GITHUB_OUTPUT
+        echo "$upload_info_array" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+        echo "Upload information:"
+        echo "$upload_info_array" | jq '.'
 

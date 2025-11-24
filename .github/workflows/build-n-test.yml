@@ -1,9 +1,13 @@
+
 name: Build and Test
 
 on:
-  push:
-    branches:
-      - automation
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'Release tag to build'
+        type: string
+        required: false
 
 jobs:
   build:
@@ -22,10 +26,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Ensure Release Branch
+        if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
+        id: ensure-branch
+        uses: redis-developer/redis-oss-release-automation/.github/actions/ensure-release-branch@main
+        with:
+          release_tag: ${{ inputs.release_tag }}
+          release_branch: ${{ github.ref_name }}
+          allow_modify: false
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Redis Snap
         uses: ./.github/actions/build
         with:
-          version: '8.4.0'
+          version: ${{ inputs.release_tag }}
           architecture: ${{ matrix.architecture }}
 
   test:
@@ -41,7 +55,7 @@ jobs:
           - architecture: amd64
             os: ubuntu-24.04
             runner: ubuntu-24.04
-          
+
           # ARM64 runners
           - architecture: arm64
             os: ubuntu-22.04
@@ -56,9 +70,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Ensure Release Branch
+        if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
+        id: ensure-branch
+        uses: redis-developer/redis-oss-release-automation/.github/actions/ensure-release-branch@main
+        with:
+          release_tag: ${{ needs.build.outputs.REDIS_VERSION }}
+          release_branch: ${{ github.ref_name }}
+          allow_modify: false
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run Redis Snap Tests
         uses: ./.github/actions/run-tests
         with:
           architecture: ${{ matrix.architecture }}
           os: ${{ matrix.os }}
-
