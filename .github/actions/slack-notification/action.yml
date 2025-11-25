@@ -42,45 +42,30 @@ runs:
       env:
         SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       run: |
-        set -x
+        set -e
         workflow_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         footer="Repository: ${{ github.repository }} | Commit: \`${{ github.sha }}\` | View: <$workflow_url|workflow run>"
 
         . ${{ github.action_path }}/../common/slack.sh
 
-        # Generate and send message
-        response=$(cat <<'JSON' | slack_format_success_message \
+        # Generate message
+        msgfile=$(mktemp)
+        cat <<'JSON' | slack_format_success_message \
         "${{ inputs.slack_channel_id }}" "${{ inputs.release_tag }}" "$footer" "${{ inputs.env }}" \
-        | curl -s --fail-with-body -X POST https://slack.api.slack.com/api/chat.postMessage \
-        -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-        -H "Content-Type: application/json" \
-        -d @-
+        > "$msgfile"
         ${{ inputs.snap_upload_info }}
         JSON
-        )
 
-        echo "Slack API Response:"
-        echo "$response" | jq '.'
-
-        # Check if successful
-        if echo "$response" | jq -e '.ok == true' > /dev/null; then
-          slack_ts=$(echo "$response" | jq -r '.ts')
-          slack_channel=$(echo "$response" | jq -r '.channel')
-
-          # Convert timestamp to URL format (remove dot)
-          ts_for_url=$(echo "$slack_ts" | tr -d '.')
-          slack_url="https://redis.slack.com/archives/${slack_channel}/p${ts_for_url}"
-
-          echo "slack_ts=$slack_ts" >> $GITHUB_OUTPUT
-          echo "slack_url=$slack_url" >> $GITHUB_OUTPUT
-
-          echo "✅ Message sent successfully!"
-          echo "Message URL: $slack_url"
-        else
-          error=$(echo "$response" | jq -r '.error // "unknown"')
-          echo "❌ Failed to send Slack message: $error"
+        # Send message
+        send_result=$(mktemp)
+        if ! slack_send_with_token "$SLACK_BOT_TOKEN" < "$msgfile" > "$send_result"; then
+          echo " Error sending message:"
+          cat "$msgfile"
           exit 1
         fi
+
+        # Handle result
+        slack_handle_message_result "${{ inputs.slack_channel_id }}" < "$send_result"
 
     - name: Send Failure Slack notification
       id: send-failure
@@ -89,7 +74,7 @@ runs:
       env:
         SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       run: |
-        set -x
+        set -e
         workflow_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         footer="Repository: ${{ github.repository }} | Commit: \`${{ github.sha }}\`"
 
@@ -101,36 +86,22 @@ runs:
 
         . ${{ github.action_path }}/../common/slack.sh
 
-        # Generate and send message
-        response=$(slack_format_failure_message \
+        # Generate message
+        msgfile=$(mktemp)
+        slack_format_failure_message \
         "${{ inputs.slack_channel_id }}" \
         "$msg for Redis: ${{ inputs.release_tag || 'unknown'}} (${{ inputs.env }})" \
         "$workflow_url" \
         "$footer" \
-        | curl -v -X POST https://slack.api.slack.com/api/chat.postMessage \
-        -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
-        -H "Content-Type: application/json" \
-        -d @-)
+        > "$msgfile"
 
-        echo "Slack API Response:"
-        echo "$response" | jq '.'
-
-        # Check if successful
-        if echo "$response" | jq -e '.ok == true' > /dev/null; then
-          slack_ts=$(echo "$response" | jq -r '.ts')
-          slack_channel=$(echo "$response" | jq -r '.channel')
-
-          # Convert timestamp to URL format (remove dot)
-          ts_for_url=$(echo "$slack_ts" | tr -d '.')
-          slack_url="https://redis.slack.com/archives/${slack_channel}/p${ts_for_url}"
-
-          echo "slack_ts=$slack_ts" >> $GITHUB_OUTPUT
-          echo "slack_url=$slack_url" >> $GITHUB_OUTPUT
-
-          echo "✅ Message sent successfully!"
-          echo "Message URL: $slack_url"
-        else
-          error=$(echo "$response" | jq -r '.error // "unknown"')
-          echo "❌ Failed to send Slack message: $error"
+        # Send message
+        send_result=$(mktemp)
+        if ! slack_send_with_token "$SLACK_BOT_TOKEN" < "$msgfile" > "$send_result"; then
+          echo "Error sending message:"
+          cat "$msgfile"
           exit 1
         fi
+
+        # Handle result
+        slack_handle_message_result "${{ inputs.slack_channel_id }}" < "$send_result"
