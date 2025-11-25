@@ -42,6 +42,7 @@ runs:
       env:
         SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       run: |
+        set -x
         workflow_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         footer="Repository: ${{ github.repository }} | Commit: \`${{ github.sha }}\` | View: <$workflow_url|workflow run>"
 
@@ -88,6 +89,7 @@ runs:
       env:
         SLACK_BOT_TOKEN: ${{ inputs.SLACK_BOT_TOKEN }}
       run: |
+        set -x
         workflow_url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         footer="Repository: ${{ github.repository }} | Commit: \`${{ github.sha }}\`"
 
