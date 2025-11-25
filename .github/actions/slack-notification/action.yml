@@ -107,7 +107,7 @@ runs:
         "$msg for Redis: ${{ inputs.release_tag || 'unknown'}} (${{ inputs.env }})" \
         "$workflow_url" \
         "$footer" \
-        | curl -s --fail-with-body -X POST https://slack.api.slack.com/api/chat.postMessage \
+        | curl -v -X POST https://slack.api.slack.com/api/chat.postMessage \
         -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
         -H "Content-Type: application/json" \
         -d @-)
