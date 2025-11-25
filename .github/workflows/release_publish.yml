@@ -25,10 +25,10 @@ jobs:
   upload-packages:
     runs-on: ubuntu-latest
     permissions:
-      # to configure-aws-credentials with a role
-      id-token: write
       # to merge changes into release
       contents: write
+      # to download artifacts from build workflow
+      actions: read
 
     steps:
       - name: Checkout code
