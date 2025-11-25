@@ -76,7 +76,7 @@ jobs:
         id: ensure-branch
         uses: redis-developer/redis-oss-release-automation/.github/actions/ensure-release-branch@main
         with:
-          release_tag: ${{ needs.build.outputs.REDIS_VERSION }}
+          release_tag: ${{ inputs.release_tag }}
           release_branch: ${{ github.ref_name }}
           allow_modify: false
           gh_token: ${{ secrets.GITHUB_TOKEN }}
