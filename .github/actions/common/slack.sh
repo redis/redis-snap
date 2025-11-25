@@ -32,7 +32,6 @@ slack_handle_message_result() {
   local response=$(cat)
 
   echo "Slack API Response:"
-  echo "$response" | jq '.'
 
   # Check if successful
   if echo "$response" | jq -e '.ok == true' > /dev/null; then
@@ -55,6 +54,7 @@ slack_handle_message_result() {
   else
     local error=$(echo "$response" | jq -r '.error // "unknown"')
     echo "❌ Failed to send Slack message: $error" >&2
+    echo "$response" | jq '.'
     return 1
   fi
 }
