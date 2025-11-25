@@ -6,7 +6,7 @@ on:
     inputs:
       release_tag:
         description: 'Release tag to build'
-        required: false
+        required: true
       workflow_uuid:
         description: 'Optional UUID to identify this workflow run'
         required: false
@@ -15,7 +15,7 @@ on:
         required: true
       risk_level:
         description: 'Type of stability (stable, rc)'
-        required: false
+        required: true
 
 # UUID is used to help automation to identify workflow run in the list of workflow runs.
 run-name: "Release Build and Test${{ github.event.inputs.workflow_uuid && format(': {0}', github.event.inputs.workflow_uuid) || '' }}"
