@@ -83,7 +83,7 @@ jq --arg channel "$1" --arg release_tag "$2" --arg footer "$3" --arg env "$4" '
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": ("*" + .file + "*\n• Revision: `" + (.revision // "unknown") + "`\n• Architectures: " + ((.architectures // []) | if type == "array" then join(", ") else . end))
+        "text": ("*" + .file + "* (revision: " + .revision + ")")
       }
     }) +
     [

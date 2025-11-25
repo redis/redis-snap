@@ -71,25 +71,27 @@ runs:
         SNAPCRAFT_STORE_CREDENTIALS: ${{ inputs.snapcraft_store_credentials }}
       run: |
         cd snap-artifacts
-        uploaded_files=""
         upload_info_array="[]"
 
         for snap_file in *.snap; do
           if [ -f "$snap_file" ]; then
             echo "Uploading $snap_file to ${{ inputs.risk_level }} channel..."
 
-            # Upload with JSON format to get detailed information
-            upload_result=$(snapcraft upload --release=${{ inputs.risk_level }} --format=json "$snap_file")
+            # Expected output: "Revision 2196 created for 'redis' and released to 'stable'"
+            upload_output=$(snapcraft upload --release=${{ inputs.risk_level }} "$snap_file" 2>&1)
+            echo "$upload_output"
 
-            echo "Upload result for $snap_file:"
-            echo "$upload_result" | jq '.'
+            revision=$(echo "$upload_output" | grep -oP 'Revision \K[0-9]+' || echo "unknown")
 
-            upload_result=$(echo "$upload_result" | jq -c --arg file "$snap_file" '.file=$file')
+            # Create JSON object with file and revision
+            upload_info=$(jq -n \
+              --arg file "$snap_file" \
+              --arg revision "$revision" \
+              '{file: $file, revision: $revision}')
 
-            # Add file name to the upload result and append to array
-            upload_info_array=$(echo "$upload_info_array" | jq -c --argjson item "$(echo "$upload_result")"  '. + [$item]')
+            # Add to array
+            upload_info_array=$(echo "$upload_info_array" | jq -c --argjson item "$upload_info" '. + [$item]')
 
-            revision=$(echo "$upload_result" | jq -r '.revision // "unknown"')
             echo "Successfully uploaded: $snap_file (revision: $revision)"
           fi
         done
