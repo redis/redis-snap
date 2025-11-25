@@ -65,10 +65,7 @@ jobs:
         uses: ./.github/actions/upload
         with:
           run_id: ${{ steps.parse-handle.outputs.run_id }}
-          release_type: ${{ github.event.inputs.release_type }}
-          release_tag: ${{ github.event.inputs.release_tag }}
-          release_version_branch: ${{ steps.ensure-branch.outputs.release_version_branch }}
-          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           risk_level: ${{ inputs.risk_level }}
           snapcraft_store_credentials: ${{ secrets.SNAP_TOKEN }}
 
