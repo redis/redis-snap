@@ -40,6 +40,7 @@ jobs:
           release_branch: ${{ github.ref_name }}
           allow_modify: true
           gh_token: ${{ secrets.GITHUB_TOKEN }}
+          release_version_branch_prefix: automation/
 
       - name: Update Redis Versions
         uses: ./.github/actions/update-redis-versions

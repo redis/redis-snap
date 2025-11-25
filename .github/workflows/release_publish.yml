@@ -52,6 +52,7 @@ jobs:
           release_branch: ${{ github.ref_name }}
           allow_modify: false
           gh_token: ${{ secrets.GITHUB_TOKEN }}
+          release_version_branch_prefix: automation/
 
       - name: Parse release handle
         id: parse-handle
