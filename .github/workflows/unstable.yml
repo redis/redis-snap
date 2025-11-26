@@ -2,72 +2,18 @@ name: Unstable
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
+  workflow_call:
   pull_request:
-    paths:
-      - 'snap/**'
-      - '.github/workflows/**'
+    branches:
+      - unstable
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - architecture: amd64
-            runner: ubuntu-24.04
-          - architecture: arm64
-            runner: ubuntu24-arm64-4-16
-
-    runs-on: ${{ matrix.runner }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Build Redis Snap
-        uses: ./.github/actions/build
-        with:
-          version: 'unstable'
-          architecture: ${{ matrix.architecture }}
-
-  test:
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # AMD64 runners
-          - architecture: amd64
-            os: ubuntu-22.04
-            runner: ubuntu-22.04
-          - architecture: amd64
-            os: ubuntu-24.04
-            runner: ubuntu-24.04
-
-          # ARM64 runners
-          - architecture: arm64
-            os: ubuntu-22.04
-            runner: ubuntu22-arm64-2-8
-          - architecture: arm64
-            os: ubuntu-24.04
-            runner: ubuntu24-arm64-2-8
-
-    runs-on: ${{ matrix.runner }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run Redis Snap Tests
-        uses: ./.github/actions/run-tests
-        with:
-          architecture: ${{ matrix.architecture }}
-          os: ${{ matrix.os }}
+    uses: redis/redis-snap/.github/workflows/build-n-test.yml@unstable
+    with:
+      release_tag: unstable
 
   publish:
-    needs: test
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04
 
