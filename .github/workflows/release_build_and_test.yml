@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_tag == 'unstable' && 'unstable' || '' }}
 
       - name: Validate Redis Release Archive
         uses: redis-developer/redis-oss-release-automation/.github/actions/validate-redis-release-archive@main
@@ -34,6 +36,7 @@ jobs:
 
       - name: Ensure Release Branch
         id: ensure-branch
+        if: github.event.inputs.release_tag != 'unstable'
         uses: redis-developer/redis-oss-release-automation/.github/actions/ensure-release-branch@main
         with:
           release_tag: ${{ github.event.inputs.release_tag }}
@@ -43,6 +46,7 @@ jobs:
           release_version_branch_prefix: automation/
 
       - name: Update Redis Versions
+        if: github.event.inputs.release_tag != 'unstable'
         uses: ./.github/actions/update-redis-versions
         with:
           risk_level: ${{ github.event.inputs.risk_level }}
