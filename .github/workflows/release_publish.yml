@@ -45,6 +45,7 @@ jobs:
           echo "env_name=$env_name" >> $GITHUB_OUTPUT
 
       - name: Ensure Release Branch
+        if: github.event.inputs.release_tag != 'unstable'
         id: ensure-branch
         uses: redis-developer/redis-oss-release-automation/.github/actions/ensure-release-branch@main
         with:
@@ -70,6 +71,7 @@ jobs:
           snapcraft_store_credentials: ${{ secrets.SNAP_TOKEN }}
 
       - name: Merge back to release branch
+        if: github.event.inputs.release_tag != 'unstable' && github.event.inputs.release_type == 'public'
         id: merge-back
         # merge only public releases into main
         uses: redis-developer/redis-oss-release-automation/.github/actions/merge-branches-verified@main

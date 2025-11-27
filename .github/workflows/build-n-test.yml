@@ -9,6 +9,9 @@ on:
         type: string
         required: false
 
+env:
+  UNSTABLE_BRANCH: release_automation
+
 jobs:
   build:
     strategy:
@@ -26,7 +29,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_tag == 'unstable' && 'unstable' || '' }}
+          ref: ${{ inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
 
       - name: Ensure Release Branch
         if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
@@ -73,7 +76,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_tag == 'unstable' && 'unstable' || '' }}
+          ref: ${{ inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
 
       - name: Ensure Release Branch
         if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
