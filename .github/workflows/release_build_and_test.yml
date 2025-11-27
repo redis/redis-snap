@@ -29,7 +29,9 @@ jobs:
         with:
           ref: ${{ github.event.inputs.release_tag == 'unstable' && 'unstable' || '' }}
 
+      # Note this is for validation only. The git checkout redis/redis is used in the build process.
       - name: Validate Redis Release Archive
+        if: github.event.inputs.release_tag != 'unstable'
         uses: redis-developer/redis-oss-release-automation/.github/actions/validate-redis-release-archive@main
         with:
           release_tag: ${{ github.event.inputs.release_tag }}
