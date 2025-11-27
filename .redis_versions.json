@@ -1,5 +1,6 @@
 {
   "stable": "8.4.0",
   "candidate": "8.4.0",
-  "edge": "unstable"
+  "edge": "unstable",
+  "_description": "This file is used mostly to inform automation flows about the latest versions for different risk levels and in PR workflow. Actual SNAP versions are determined in snap/snapcraft.yaml based on release.h. The versions in this file should be in sync but they can technically go out of sync in case of error."
 }
