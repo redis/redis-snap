@@ -10,7 +10,8 @@ on:
         required: false
 
 env:
-  UNSTABLE_BRANCH: release_automation
+  # useful for testing unstable flow with different branches`
+  UNSTABLE_BRANCH: unstable
 
 jobs:
   build:
