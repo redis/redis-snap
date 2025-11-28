@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    uses: redis/redis-snap/.github/workflows/build-n-test.yml
+    uses: ./.github/workflows/build-n-test.yml
     with:
       release_tag: unstable
 
