@@ -3,7 +3,8 @@ name: Pull Request Build and Test
 on:
   pull_request:
     branches:
-      - main
+      - master
+      - unstable
 
 jobs:
   determine-version:

@@ -1,4 +1,7 @@
 # This workflow is part of the Redis OSS release automation process.
+# In addition to regular tag builds, it also supports building unstable version.
+# Unstable release_handle artifact could be used to publish unstable build to
+# edge channel with the help of release_publish workflow.
 name: Release Build and Test
 
 on:

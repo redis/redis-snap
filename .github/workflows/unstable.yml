@@ -1,3 +1,4 @@
+# This wokrflow is for building and publishing nightly unstable builds of Redis with edge risk level.
 name: Unstable
 
 on:
