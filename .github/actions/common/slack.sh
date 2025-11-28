@@ -1,9 +1,11 @@
 #!/bin/bash
 
+
 # Send a Slack message using Bot Token API
 # Reads JSON message from stdin, sends to Slack API
 # Usage: slack_send_with_token "$SLACK_BOT_TOKEN" < message.json
 slack_send_with_token() {
+  set -x
   local token="$1"
   local curl_stderr=$(mktemp)
 
@@ -28,6 +30,7 @@ slack_send_with_token() {
 # If GITHUB_OUTPUT is set, writes slack_ts and slack_url to it
 # Usage: slack_handle_message_result "$SLACK_CHANNEL_ID" < response.json
 slack_handle_message_result() {
+  set -x
   local channel_id="$1"
   local response=$(cat)
 
