@@ -78,8 +78,8 @@ runs:
             echo "Uploading $snap_file to ${{ inputs.risk_level }} channel..."
 
             # Expected output: "Revision 2196 created for 'redis' and released to 'stable'"
-            upload_output=$(snapcraft upload --release=${{ inputs.risk_level }} "$snap_file" 2>&1)
-            echo "$upload_output"
+            snapcraft upload --release=${{ inputs.risk_level }} "$snap_file" | tee upload_output.txt
+            upload_output=$(cat upload_output.txt)
 
             revision=$(echo "$upload_output" | grep -oP 'Revision \K[0-9]+' || echo "unknown")
 
