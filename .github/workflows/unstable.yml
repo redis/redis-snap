@@ -9,17 +9,23 @@ on:
 
 jobs:
   build:
-    uses: redis/redis-snap/.github/workflows/build-n-test.yml@unstable
+    uses: redis/redis-snap/.github/workflows/build-n-test.yml
     with:
       release_tag: unstable
 
   publish:
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: >-
+            ${{ (github.ref_name == 'unstable'
+            || github.event_name == 'workflow_call'
+            || github.event_name == 'schedule')
+            && 'unstable'
+            || ''
+            }}
 
       - name: Upload all architectures to Snap Store
         uses: ./.github/actions/upload
