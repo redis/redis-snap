@@ -117,6 +117,8 @@ parts:
       - unzip
       - rsync
       - clang
+      - llvm
+      - libclang-dev
       - automake
       - autoconf
       - libtool
