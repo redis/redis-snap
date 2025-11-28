@@ -42,10 +42,19 @@ jobs:
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           release_version_branch_prefix: automation/
 
+      # By default use stable to determine version when release_tag is not specified
+      # This is used in PR builds
+      - name: Determine Redis version from .redis_versions.json
+        if: inputs.release_tag == ''
+        id: determine-version
+        uses: ./.github/actions/determine-version
+        with:
+          risk_level: stable
+
       - name: Build Redis Snap
         uses: ./.github/actions/build
         with:
-          version: ${{ inputs.release_tag }}
+          version: ${{ inputs.release_tag || steps.determine-version.outputs.redis_version }}
           architecture: ${{ matrix.architecture }}
 
   test:

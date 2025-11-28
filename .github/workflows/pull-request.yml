@@ -7,48 +7,8 @@ on:
       - unstable
 
 jobs:
-  determine-version:
-    name: Determine Version
-    runs-on: ubuntu-latest
-    outputs:
-      REDIS_VERSION: ${{ steps.determine-version.outputs.REDIS_VERSION }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set risk level
-        id: set-risk-level
-        run: |
-          echo "RISK_LEVEL=stable" | tee -a $GITHUB_OUTPUT
-
-      - name: Determine Redis version from risk level
-        id: determine-version
-        run: |
-          if [ -z "${{ steps.set-risk-level.outputs.RISK_LEVEL }}" ]; then
-            echo "Error: risk_level input is required"
-            exit 1
-          fi
-
-          if [ ! -f ".redis_versions.json" ]; then
-            echo "Error: .redis_versions.json not found"
-            exit 1
-          fi
-
-          REDIS_VERSION=$(jq -r ".${{ steps.set-risk-level.outputs.RISK_LEVEL }}" .redis_versions.json)
-
-          if [ "$REDIS_VERSION" = "null" ] || [ -z "$REDIS_VERSION" ]; then
-            echo "Error: Risk level '${{ steps.set-risk-level.outputs.RISK_LEVEL }}' not found in .redis_versions.json"
-            echo "Available risk levels:"
-            jq -r 'keys[]' .redis_versions.json
-            exit 1
-          fi
-
-          echo "REDIS_VERSION=$REDIS_VERSION" >> $GITHUB_OUTPUT
-          echo "Redis version for ${{ steps.set-risk-level.outputs.RISK_LEVEL }}: $REDIS_VERSION"
-
   build-and-test:
     name: Build and Test
-    needs: determine-version
     uses: ./.github/workflows/build-n-test.yml
     with:
-      release_tag: ${{ needs.determine-version.outputs.REDIS_VERSION }}
+      release_tag:
