@@ -65,7 +65,7 @@ runs:
         fi
 
         # Handle result
-        slack_handle_message_result "${{ inputs.slack_channel_id }}" < "$send_result"
+        slack_handle_message_result "${{ inputs.slack_channel_id }}" "$(cat "$msgfile")" < "$send_result"
 
     - name: Send Failure Slack notification
       id: send-failure
@@ -104,4 +104,4 @@ runs:
         fi
 
         # Handle result
-        slack_handle_message_result "${{ inputs.slack_channel_id }}" < "$send_result"
+        slack_handle_message_result "${{ inputs.slack_channel_id }}" "$(cat "$msgfile")" < "$send_result"

@@ -32,6 +32,7 @@ slack_send_with_token() {
 slack_handle_message_result() {
   set -x
   local channel_id="$1"
+  local message="$2"
   local response=$(cat)
 
   echo "Slack API Response:"
@@ -58,6 +59,7 @@ slack_handle_message_result() {
     local error=$(echo "$response" | jq -r '.error // "unknown"')
     echo "❌ Failed to send Slack message: $error" >&2
     echo "$response" | jq '.'
+    echo "Message content: $message" >&2
     return 1
   fi
 }

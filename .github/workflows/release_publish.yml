@@ -112,7 +112,7 @@ jobs:
           slack_channel_id: ${{ vars.SLACK_CHANNEL_ID }}
           release_tag: ${{ github.event.inputs.release_tag }}
           env: ${{ steps.validate-inputs.outputs.env_name }}
-          snap_upload_info: ${{ steps.upload.outputs.packages_json }}
+          snap_upload_info: ${{ steps.upload.outputs.upload_info }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Add Slack notification info to release info
@@ -149,6 +149,5 @@ jobs:
           slack_channel_id: ${{ vars.SLACK_CHANNEL_ID }}
           release_tag: ${{ github.event.inputs.release_tag }}
           env: ${{ steps.validate-inputs.outputs.env_name }}
-          snap_upload_info: ${{ steps.upload.outputs.packages_json }}
           message: ":ubuntu: SNAP package upload failed"
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
