@@ -8,7 +8,7 @@ slack_send_with_token() {
   local curl_stderr=$(mktemp)
 
   # Run curl with verbose output, stderr to curl_stderr
-  if ! curl -v -X POST https://api.slack.com/api/chat.postMessage \
+  if ! curl --fail-with-body -v -X POST https://api.slack.com/api/chat.postMessage \
     -H "Authorization: Bearer $token" \
     -H "Content-Type: application/json" \
     -d @- 2>"$curl_stderr"; then
