@@ -9,3 +9,4 @@ jobs:
   call-unstable-build:
     if: github.repository == 'redis/redis-snap'
     uses: redis/redis-snap/.github/workflows/unstable.yml@unstable
+    secrets: inherit
