@@ -1,0 +1,106 @@
+
+name: Build and Test
+
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'Release tag to build'
+        type: string
+        required: false
+
+env:
+  # useful for testing unstable flow with different branches`
+  UNSTABLE_BRANCH: unstable
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: amd64
+            runner: ubuntu-24.04
+          - architecture: arm64
+            runner: ubuntu24-arm64-4-16
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
+
+      - name: Ensure Release Branch
+        if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
+        id: ensure-branch
+        uses: redis-developer/redis-oss-release-automation/.github/actions/ensure-release-branch@main
+        with:
+          release_tag: ${{ inputs.release_tag }}
+          release_branch: ${{ github.ref_name }}
+          allow_modify: false
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          release_version_branch_prefix: automation/
+
+      # By default use stable to determine version when release_tag is not specified
+      # This is used in PR builds
+      - name: Determine Redis version from .redis_versions.json
+        if: inputs.release_tag == ''
+        id: determine-version
+        uses: ./.github/actions/determine-version
+        with:
+          risk_level: stable
+
+      - name: Build Redis Snap
+        uses: ./.github/actions/build
+        with:
+          version: ${{ inputs.release_tag || steps.determine-version.outputs.redis_version }}
+          architecture: ${{ matrix.architecture }}
+
+  test:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # AMD64 runners
+          - architecture: amd64
+            os: ubuntu-22.04
+            runner: ubuntu-22.04
+          - architecture: amd64
+            os: ubuntu-24.04
+            runner: ubuntu-24.04
+
+          # ARM64 runners
+          - architecture: arm64
+            os: ubuntu-22.04
+            runner: ubuntu22-arm64-2-8
+          - architecture: arm64
+            os: ubuntu-24.04
+            runner: ubuntu24-arm64-2-8
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
+
+      - name: Ensure Release Branch
+        if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
+        id: ensure-branch
+        uses: redis-developer/redis-oss-release-automation/.github/actions/ensure-release-branch@main
+        with:
+          release_tag: ${{ inputs.release_tag }}
+          release_branch: ${{ github.ref_name }}
+          allow_modify: false
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          release_version_branch_prefix: automation/
+
+      - name: Run Redis Snap Tests
+        uses: ./.github/actions/run-tests
+        with:
+          architecture: ${{ matrix.architecture }}
+          os: ${{ matrix.os }}

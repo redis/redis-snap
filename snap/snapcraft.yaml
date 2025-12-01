@@ -99,7 +99,7 @@ parts:
       make -j4
       PREFIX=${SNAPCRAFT_PART_INSTALL}/usr make install
       VER=`sed -n 's/^.* REDIS_VERSION "\(.*\)"$/\1/g p' < src/version.h`
-      if [ "$VER" = "999.999.999" ]; then
+      if [ "$VER" = "255.255.255" ]; then
           GITSHA=`sed -n 's/^.* REDIS_GIT_SHA1 "\(.*\)"$/\1/g p' < src/release.h`
           VER="unstable-$GITSHA"
       fi
@@ -117,8 +117,6 @@ parts:
       - unzip
       - rsync
       - clang
-      - llvm
-      - libclang-dev
       - automake
       - autoconf
       - libtool

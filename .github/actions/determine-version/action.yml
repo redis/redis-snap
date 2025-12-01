@@ -1,0 +1,47 @@
+name: 'Determine Redis Version'
+description: 'Determine Redis version to build based on risk level from .redis_versions.json'
+inputs:
+  risk_level:
+    description: 'Risk level (edge, candidate, stable)'
+    required: true
+
+outputs:
+  redis_version:
+    description: 'Redis version to build (e.g., "8.4.0", "unstable")'
+    value: ${{ steps.determine-version.outputs.redis_version }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate risk level
+      shell: bash
+      run: |
+        if [[ ! "${{ inputs.risk_level }}" =~ ^(edge|candidate|stable)$ ]]; then
+          echo "Error: risk_level must be one of: edge, candidate, stable"
+          echo "Provided value: ${{ inputs.risk_level }}"
+          exit 1
+        fi
+        echo "Risk level validation passed: ${{ inputs.risk_level }}"
+
+    - name: Determine Redis version from risk level
+      id: determine-version
+      shell: bash
+      run: |
+        if [ ! -f ".redis_versions.json" ]; then
+          echo "Error: .redis_versions.json not found"
+          exit 1
+        fi
+
+        REDIS_VERSION=$(jq -r ".${{ inputs.risk_level }}" .redis_versions.json)
+
+        if [ "$REDIS_VERSION" = "null" ] || [ -z "$REDIS_VERSION" ]; then
+          echo "Error: Risk level '${{ inputs.risk_level }}' not found in .redis_versions.json"
+          echo "Available risk levels:"
+          jq -r 'keys[]' .redis_versions.json
+          exit 1
+        fi
+
+        echo "Risk level: ${{ inputs.risk_level }}"
+        echo "Redis version: $REDIS_VERSION"
+        echo "redis_version=$REDIS_VERSION" >> $GITHUB_OUTPUT
+
