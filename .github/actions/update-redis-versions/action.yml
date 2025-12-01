@@ -1,0 +1,35 @@
+name: 'Update Redis Versions'
+description: 'Update .redis_versions.json with new release tag for specified risk level'
+inputs:
+  risk_level:
+    description: 'Risk level to update (stable, candidate)'
+    required: true
+  release_tag:
+    description: 'Release tag to set for the risk level'
+    required: true
+  release_version_branch:
+    description: 'Release version branch to commit to'
+    required: true
+
+outputs:
+  changed_files:
+    description: 'List of files that were modified'
+    value: ${{ steps.update-versions.outputs.changed_files }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update Redis Versions
+      id: update-versions
+      shell: bash
+      run: |
+        ${{ github.action_path }}/update-redis-versions.sh ${{ inputs.risk_level }} ${{ inputs.release_tag }}
+
+    - name: Create verified commit
+      if: steps.update-versions.outputs.changed_files != ''
+      uses: iarekylew00t/verified-bot-commit@v1
+      with:
+        message: "Update ${{ inputs.risk_level }} to ${{ inputs.release_tag }}"
+        files: ${{ steps.update-versions.outputs.changed_files }}
+        ref: ${{ inputs.release_version_branch }}
+

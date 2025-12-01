@@ -1,0 +1,16 @@
+name: Pull Request Build and Test
+
+on:
+  pull_request:
+    branches:
+      - master
+      - unstable
+
+jobs:
+  # TODO: we should have a way to run in unstable mode for PRs to unstable but
+  # without switching to unstable branch
+  build-and-test:
+    name: Build and Test
+    uses: ./.github/workflows/build-n-test.yml
+    with:
+      release_tag:
