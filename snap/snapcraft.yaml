@@ -140,6 +140,3 @@ parts:
       - clang-21
       - lld-21
       - llvm-21
-      - llvm-21-dev
-      - libclang-21-dev
-      - libllvm21
