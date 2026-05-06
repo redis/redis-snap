@@ -22,7 +22,7 @@ jobs:
           - architecture: amd64
             runner: ubuntu-24.04
           - architecture: arm64
-            runner: ubuntu24-arm64-4-16
+            runner: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runner }}
 
