@@ -98,6 +98,12 @@ runs:
           find parts -type f -name "*.log" | sort > /tmp/build-logs/parts-logs-list.txt 2>&1
         fi
 
+        # snapcraft's own execution log (apt/repo/install output the GH log hides);
+        # owned by root because we ran `sudo snapcraft`.
+        sudo cp -r /root/.local/state/snapcraft/log /tmp/build-logs/snapcraft-log 2>/dev/null \
+          && sudo chown -R "$(id -u):$(id -g)" /tmp/build-logs/snapcraft-log \
+          || echo "No snapcraft execution log found"
+
         # Create a summary file
         {
           echo "Build failure summary for snap on ${{ inputs.architecture }}"

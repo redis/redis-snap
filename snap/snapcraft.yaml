@@ -13,16 +13,6 @@ grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 base: core22
 
-# LLVM 21 (clang/lld/llvm-tools) is required to build RediSearch with LTO=1.
-# core22 ships clang 14, so pull a newer toolchain from the upstream LLVM apt
-# repository.
-package-repositories:
-  - type: apt
-    url: https://apt.llvm.org/jammy/
-    suites: [llvm-toolchain-jammy-21]
-    components: [main]
-    key-id: 6084F3CF814B57C1CF12EFD515CF4D18AF4F7421
-
 apps:
   server:
     command: >-
@@ -105,6 +95,17 @@ parts:
       - DISABLE_WERRORS: "yes"
       - BUILD_TLS: "yes"
       - LTO: "1"
+    override-pull: |
+      craftctl default
+      # RediSearch's cross-language LTO needs clang/lld/llvm 21
+      apt-get install -y --no-install-recommends wget gnupg ca-certificates
+      install -d /etc/apt/keyrings
+      wget -qO /etc/apt/keyrings/llvm.asc https://apt.llvm.org/llvm-snapshot.gpg.key
+      codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+      echo "deb [signed-by=/etc/apt/keyrings/llvm.asc] http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-21 main" \
+        > /etc/apt/sources.list.d/llvm.list
+      apt-get update
+      apt-get install -y --no-install-recommends clang-21 lld-21 llvm-21
     override-build: |
       # Pick clang/lld/llvm-tools 21 for RediSearch's cross-language LTO link.
       export PATH="/usr/lib/llvm-21/bin:$PATH"
@@ -136,7 +137,3 @@ parts:
       - curl
       - libssl-dev
       - jq
-      # LLVM 21 toolchain for RediSearch LTO (sourced from apt.llvm.org).
-      - clang-21
-      - lld-21
-      - llvm-21
