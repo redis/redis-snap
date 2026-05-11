@@ -7,10 +7,10 @@ on:
       - unstable
 
 jobs:
-  # TODO: we should have a way to run in unstable mode for PRs to unstable but
-  # without switching to unstable branch
   build-and-test:
     name: Build and Test
     uses: ./.github/workflows/build-n-test.yml
     with:
-      release_tag:
+      # PRs against unstable -> build redis/redis@unstable; otherwise use the
+      # stable pin in .redis_versions.json.
+      release_tag: ${{ github.base_ref == 'unstable' && 'unstable' || '' }}

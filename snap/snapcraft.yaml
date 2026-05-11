@@ -13,6 +13,15 @@ grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 base: core22
 
+# LLVM 21 (matches rustc 1.94's LLVM) is required to build RediSearch with LTO.
+# core22 ships clang 14, so pull the toolchain from apt.llvm.org.
+package-repositories:
+  - type: apt
+    url: https://apt.llvm.org/jammy/
+    suites: [llvm-toolchain-jammy-21]
+    components: [main]
+    key-id: 6084F3CF814B57C1CF12EFD515CF4D18AF4F7421
+
 apps:
   server:
     command: >-
@@ -95,6 +104,8 @@ parts:
       - DISABLE_WERRORS: "yes"
       - BUILD_TLS: "yes"
     override-build: |
+      # Prefer LLVM 21 toolchain on PATH for RediSearch's LTO link.
+      export PATH="/usr/lib/llvm-21/bin:$PATH"
       mkdir -p ${SNAPCRAFT_PART_INSTALL}/usr/lib/redis/modules
       make -j4
       PREFIX=${SNAPCRAFT_PART_INSTALL}/usr make install
@@ -123,3 +134,7 @@ parts:
       - curl
       - libssl-dev
       - jq
+      # LLVM 21 toolchain for RediSearch LTO (sourced from apt.llvm.org).
+      - clang-21
+      - lld-21
+      - llvm-21
