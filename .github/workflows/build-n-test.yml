@@ -30,7 +30,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
+          # Keep PR head on pull_request runs so the PR's snap/ is exercised.
+          ref: ${{ github.event_name != 'pull_request' && inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
 
       - name: Ensure Release Branch
         if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
@@ -86,7 +87,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
+          # See build job above.
+          ref: ${{ github.event_name != 'pull_request' && inputs.release_tag == 'unstable' && env.UNSTABLE_BRANCH || '' }}
 
       - name: Ensure Release Branch
         if: inputs.release_tag != '' && inputs.release_tag != 'unstable'
