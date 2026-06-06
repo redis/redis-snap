@@ -16,7 +16,7 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout Redis repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: redis/redis
         path: redis
@@ -41,7 +41,7 @@ runs:
         sudo snap install snapcraft --classic
 
     - name: Setup LXD
-      uses: canonical/setup-lxd@v0.1.2
+      uses: canonical/setup-lxd@v1
 
     - name: Build Snap
       shell: bash
@@ -59,7 +59,7 @@ runs:
         echo "Built packages: $packages"
 
     - name: Upload to artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: redis-snap-${{ inputs.architecture }}-${{ github.sha }}
         path: '*.snap'
@@ -111,7 +111,7 @@ runs:
 
     - name: Upload build failure logs
       if: failure() && inputs.version == 'unstable'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: build-failure-${{ inputs.architecture }}-snap
         path: /tmp/build-logs/

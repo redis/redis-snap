@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Validate inputs
         id: validate-inputs
@@ -136,7 +136,7 @@ jobs:
 
       - name: Upload publish result artifact
         if: always() && steps.create-release-info.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release_info
           path: result.json

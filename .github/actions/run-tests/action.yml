@@ -29,14 +29,14 @@ runs:
 
     - name: Download artifact from current run
       if: inputs.run_id == ''
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: redis-snap-${{ inputs.architecture }}-${{ github.sha }}
         path: ./snap-artifacts
 
     - name: Download artifact from specific run
       if: inputs.run_id != ''
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: redis-snap-${{ inputs.architecture }}-${{ github.sha }}
         path: ./snap-artifacts
