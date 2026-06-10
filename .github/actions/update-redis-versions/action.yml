@@ -27,7 +27,7 @@ runs:
 
     - name: Create verified commit
       if: steps.update-versions.outputs.changed_files != ''
-      uses: iarekylew00t/verified-bot-commit@v1
+      uses: iarekylew00t/verified-bot-commit@v2
       with:
         message: "Update ${{ inputs.risk_level }} to ${{ inputs.release_tag }}"
         files: ${{ steps.update-versions.outputs.changed_files }}
