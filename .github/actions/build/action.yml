@@ -26,14 +26,12 @@ runs:
       if: inputs.version == 'unstable'
       shell: bash
       run: |
-        echo "Updating module versions to use master branch"
-        for module in redisbloom redisearch redistimeseries redisjson; do
-          if [ -f "redis/modules/${module}/Makefile" ]; then
-            echo "Updating ${module} to use master branch"
-            sed -i 's/MODULE_VERSION = .*/MODULE_VERSION = master/' "redis/modules/${module}/Makefile"
-            echo "Verifying ${module} version: $(grep "MODULE_VERSION" "redis/modules/${module}/Makefile")"
-          fi
-        done
+        echo "Updating module refs to use master branch"
+        if ! command -v yq >/dev/null 2>&1; then
+          sudo snap install yq
+        fi
+        yq -i '.modules[].ref = "master"' redis/modules/modules.yaml
+        yq '.modules[] | .name + "=" + .ref' redis/modules/modules.yaml
 
     - name: Setup Snapcraft
       shell: bash
@@ -89,7 +87,10 @@ runs:
         # Get Redis source info
         if [ -d "redis" ]; then
           (cd redis && git log -n 3) > /tmp/build-logs/redis-git-info.log 2>&1
-          find redis/modules -name "Makefile" -exec grep "MODULE_VERSION" {} \; > /tmp/build-logs/module-versions.log 2>&1
+          if [ -f redis/modules/modules.yaml ]; then
+            yq '.modules[] | .name + "=" + .ref' redis/modules/modules.yaml > /tmp/build-logs/module-refs.log 2>&1 || \
+              cp redis/modules/modules.yaml /tmp/build-logs/modules.yaml
+          fi
         fi
 
         # Get snap parts info if they exist
