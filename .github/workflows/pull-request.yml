@@ -10,6 +10,8 @@ jobs:
   build-and-test:
     name: Build and Test
     uses: ./.github/workflows/build-n-test.yml
+    secrets:
+      SECURITY_API_TOKEN: ${{ secrets.SECURITY_API_TOKEN }}
     with:
       # PRs against unstable -> build redis/redis@unstable; otherwise use the
       # stable pin in .redis_versions.json.

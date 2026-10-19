@@ -4,6 +4,8 @@
   Redis
 </h1>
 
+[![Protected by Tracebit Community Edition](.github/assets/tracebit-badge.svg)](https://community.tracebit.com/supplychainattacks)
+
 <p align="center"><b>This is the snap for Redis</b>, <i>“Redis is used as a database, cache and message broker”</i>. It works on Ubuntu, Fedora, Debian, and other major Linux
 distributions.</p>
 
