@@ -100,6 +100,8 @@ parts:
     source: redis
     build-environment:
       - BUILD_TLS: "yes"
+      # zstd replication compression (8.10+); older versions ignore it.
+      - BUILD_COMPRESSION: "yes"
     override-build: |
       # Prefer LLVM 21 toolchain on PATH for RediSearch's LTO link.
       export PATH="/usr/lib/llvm-21/bin:$PATH"
@@ -130,8 +132,11 @@ parts:
       - libtool
       - curl
       - libssl-dev
+      - libzstd-dev
       - jq
       # LLVM 21 toolchain for RediSearch LTO (sourced from apt.llvm.org).
       - clang-21
       - lld-21
       - llvm-21
+    stage-packages:
+      - libzstd1
