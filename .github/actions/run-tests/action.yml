@@ -91,6 +91,14 @@ runs:
                   expected: 'tls-protocols \"TLSv1.2\"'
                   got     : '$(grep tls-protocols /var/snap/redis/common/etc/redis/redis.conf)'"; exit 1; }
 
+    - name: Verify replication compression support
+      shell: bash
+      run: |
+        # repl-compression only exists when built with BUILD_COMPRESSION=yes.
+        [ "$(redis.cli CONFIG GET repl-compression | head -1)" = "repl-compression" ] || \
+          { echo "Compression test failed: repl-compression config missing (built without BUILD_COMPRESSION?)"; exit 1; }
+        echo "Replication compression is supported"
+
     - name: Verify installed modules
       shell: bash
       run: |
